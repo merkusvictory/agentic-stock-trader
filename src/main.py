@@ -27,6 +27,7 @@ async def run_trading_cycle(symbol: str):
 
     bundle = await scout.run(symbol)
     log.info(f"fetched {len(bundle.articles)} articles", extra={"agent": "scout", "symbol": symbol})
+    print(f"\n=== Scout Digest ===\n{bundle.digest}\n")
 
     pros, cons = None, None
     decision = None
@@ -36,9 +37,19 @@ async def run_trading_cycle(symbol: str):
             pros_agent.run(bundle),
             cons_agent.run(bundle),
         )
+
+        print(f"\n=== Pros Reasoning (iteration {i + 1}) ===\n{pros.reasoning}\n")
+        print(f"=== Cons Reasoning (iteration {i + 1}) ===\n{cons.reasoning}\n")
+
         context = JudgeContext(iteration=i)
         decision = await judge.run(pros, cons, symbol, context)
 
+        print(
+            f"=== Judge Decision (iteration {i + 1}) ===\n"
+            f"Action:     {decision.action.upper()}\n"
+            f"Confidence: {decision.confidence:.2f}\n"
+            f"Reasoning:  {decision.reasoning}\n"
+        )
         log.info(
             f"judge iteration {i + 1}: {decision.action} @ {decision.confidence:.2f}",
             extra={"agent": "judge", "symbol": symbol},
@@ -58,6 +69,12 @@ async def run_trading_cycle(symbol: str):
     )
 
     report = await evaluator.evaluate(order)
+    print(
+        f"\n=== Evaluator Report ===\n"
+        f"PnL:     {report.pnl_pct:.2f}%\n"
+        f"Verdict: {report.verdict}\n"
+        f"\nFull reasoning:\n{report.reasoning}\n"
+    )
     log.info(
         f"evaluation: pnl={report.pnl_pct:.2f}% | {report.verdict}",
         extra={"agent": "evaluator", "symbol": symbol},

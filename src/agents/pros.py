@@ -8,6 +8,7 @@ from src.agents.scout import NewsBundle
 @dataclass(frozen=True)
 class ProsList:
     arguments: tuple
+    reasoning: str = ""
 
 
 class ProsAgent:
@@ -22,7 +23,7 @@ class ProsAgent:
                 digest=news_bundle.digest,
             ),
         )
-        return ProsList(arguments=_parse_bullets(response))
+        return ProsList(arguments=_parse_bullets(response), reasoning=response.strip())
 
 
 def _parse_bullets(text: str) -> tuple:

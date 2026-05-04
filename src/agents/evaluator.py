@@ -11,6 +11,7 @@ class EvaluationReport:
     pnl_pct: float
     verdict: str
     suggested_adjustments: tuple
+    reasoning: str = ""
 
 
 class EvaluatorAgent:
@@ -39,6 +40,7 @@ class EvaluatorAgent:
             pnl_pct=round(pnl_pct, 4),
             verdict=verdict,
             suggested_adjustments=adjustments,
+            reasoning=response.strip(),
         )
 
 

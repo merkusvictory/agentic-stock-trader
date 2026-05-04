@@ -8,6 +8,7 @@ from src.agents.scout import NewsBundle
 @dataclass(frozen=True)
 class ConsList:
     arguments: tuple
+    reasoning: str = ""
 
 
 class ConsAgent:
@@ -22,7 +23,7 @@ class ConsAgent:
                 digest=news_bundle.digest,
             ),
         )
-        return ConsList(arguments=_parse_bullets(response))
+        return ConsList(arguments=_parse_bullets(response), reasoning=response.strip())
 
 
 def _parse_bullets(text: str) -> tuple:
