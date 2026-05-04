@@ -1,9 +1,30 @@
+from dataclasses import dataclass
+
 from src.services.llm_call import LLMCall
+from src.prompts.argument_prompts import CONS_SYSTEM, CONS_ARGUMENTS
+from src.agents.scout import NewsBundle
 
-class ConAnalyst:
+
+@dataclass(frozen=True)
+class ConsList:
+    arguments: tuple
+
+
+class ConsAgent:
     def __init__(self, llm: LLMCall):
-        self.llm = llm
-        self.system_instruction = "You are a highly critical yet cautious financial analyst. Find the HIDDEN DOWNSIDE in every news story."
+        self._llm = llm
 
-    async def analyze(self, news_text):
-        return await self.llm.get_response(self.system_instruction, news_text)
+    async def run(self, news_bundle: NewsBundle) -> ConsList:
+        response = await self._llm.get_response(
+            CONS_SYSTEM,
+            CONS_ARGUMENTS.format(
+                symbol=news_bundle.symbol,
+                digest=news_bundle.digest,
+            ),
+        )
+        return ConsList(arguments=_parse_bullets(response))
+
+
+def _parse_bullets(text: str) -> tuple:
+    lines = (line.strip().lstrip("-•* ") for line in text.strip().splitlines())
+    return tuple(line for line in lines if line)
